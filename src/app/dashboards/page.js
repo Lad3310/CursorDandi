@@ -181,7 +181,7 @@ export default function ApiKeyDashboard() {
       </div>
 
       <div className="text-center mt-12">
-        <p className="text-gray-600 mb-4">Have any questions, feedback or need support? We'd love to hear from you!</p>
+        <p className="text-gray-600 mb-4">Have any questions, feedback or need support? We would love to hear from you!</p>
         <button className="bg-purple-500 text-white px-6 py-2 rounded-full text-sm hover:bg-purple-600 transition">
           Contact us
         </button>
