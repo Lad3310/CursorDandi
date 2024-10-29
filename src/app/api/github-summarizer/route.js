@@ -15,10 +15,16 @@ export async function POST(request) {
   try {
     const { githubUrl } = await request.json();
     
+    if (!process.env.GITHUB_TOKEN) {
+      throw new Error('GitHub token is not configured');
+    }
+    
     // Extract owner and repo from GitHub URL
     const urlParts = githubUrl.split('/');
     const owner = urlParts[urlParts.length - 2];
     const repo = urlParts[urlParts.length - 1];
+
+    console.log(`Fetching data for ${owner}/${repo}`);
 
     // Fetch repository data
     const repoResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
@@ -30,7 +36,9 @@ export async function POST(request) {
     });
 
     if (!repoResponse.ok) {
-      throw new Error('Failed to fetch repository data');
+      const errorData = await repoResponse.text();
+      console.error('GitHub API Error:', errorData);
+      throw new Error(`GitHub API error: ${repoResponse.status} ${repoResponse.statusText}`);
     }
 
     const repoData = await repoResponse.json();
@@ -48,7 +56,7 @@ export async function POST(request) {
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error details:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
