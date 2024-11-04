@@ -89,10 +89,23 @@ export async function POST(request) {
         topics: repoData.topics,
         lastUpdated: new Date(repoData.updated_at).toLocaleDateString()
       }
+    }, {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, x-api-key'
+      }
     });
 
   } catch (error) {
     console.error('Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message }, { 
+      status: 500,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, x-api-key'
+      }
+    });
   }
 }
