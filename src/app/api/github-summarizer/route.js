@@ -50,7 +50,7 @@ export async function POST(request) {
 
     // Initialize LangChain with OpenAI
     const model = new OpenAI({
-      openAIApiKey: process.env.OPENAI_API_KEY,
+      apiKey: process.env.OPENAI_API_KEY,
       temperature: 0.7,
     });
 
