@@ -13,17 +13,18 @@ export async function OPTIONS() {
 
 export async function POST(request) {
   try {
-    // Add CORS headers to the response
-    const response = NextResponse.next();
-    response.headers.set('Access-Control-Allow-Origin', '*');
-    response.headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, x-api-key');
-
     const apiKey = request.headers.get('x-api-key');
     const { githubUrl } = await request.json();
 
     if (!apiKey) {
-      return NextResponse.json({ error: 'API key is required' }, { status: 401 });
+      return NextResponse.json({ error: 'API key is required' }, { 
+        status: 401,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, x-api-key'
+        }
+      });
     }
 
     // Validate API key against Supabase
@@ -34,7 +35,14 @@ export async function POST(request) {
       .single();
 
     if (keyError || !keyData) {
-      return NextResponse.json({ error: 'Invalid API key' }, { status: 403 });
+      return NextResponse.json({ error: 'Invalid API key' }, { 
+        status: 403,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, x-api-key'
+        }
+      });
     }
 
     if (!process.env.GITHUB_TOKEN) {
