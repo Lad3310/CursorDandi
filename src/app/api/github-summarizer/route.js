@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { OpenAI } from '@langchain/openai';
 import { supabase } from '@/supabaseClient';
 
 export async function POST(request) {
@@ -48,25 +47,6 @@ export async function POST(request) {
 
     const repoData = await repoResponse.json();
 
-    // Initialize LangChain with OpenAI
-    const model = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-      temperature: 0.7,
-    });
-
-    // Generate summary using LangChain
-    const prompt = `Analyze this GitHub repository and provide a detailed summary:
-    Name: ${repoData.name}
-    Description: ${repoData.description}
-    Stars: ${repoData.stargazers_count}
-    Language: ${repoData.language}
-    Topics: ${repoData.topics?.join(', ')}
-    Forks: ${repoData.forks_count}
-    Open Issues: ${repoData.open_issues_count}
-    Last Updated: ${new Date(repoData.updated_at).toLocaleDateString()}`;
-
-    const summary = await model.invoke(prompt);
-
     // Update API key usage count
     await supabase
       .from('api_keys')
@@ -74,14 +54,16 @@ export async function POST(request) {
       .eq('id', keyData.id);
 
     return NextResponse.json({
-      summary,
       repository: repoData.full_name,
       url: githubUrl,
       stats: {
         stars: repoData.stargazers_count,
         forks: repoData.forks_count,
         language: repoData.language,
-        openIssues: repoData.open_issues_count
+        openIssues: repoData.open_issues_count,
+        description: repoData.description,
+        topics: repoData.topics,
+        lastUpdated: new Date(repoData.updated_at).toLocaleDateString()
       }
     });
 
