@@ -1,14 +1,19 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/supabaseClient';
 
-export async function OPTIONS() {
-  return NextResponse.json({}, { 
-    headers: {
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, x-api-key',
-      'Access-Control-Allow-Origin': '*'
-    }
-  });
+export async function OPTIONS(request) {
+  if (request.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, x-api-key',
+        'Access-Control-Max-Age': '86400'
+      }
+    });
+  }
+  return new Response(null, { status: 405 });
 }
 
 export async function POST(request) {
