@@ -1,6 +1,16 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/supabaseClient';
 
+export async function OPTIONS() {
+  return NextResponse.json({}, { 
+    headers: {
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, x-api-key',
+      'Access-Control-Allow-Origin': '*'
+    }
+  });
+}
+
 export async function POST(request) {
   try {
     const apiKey = request.headers.get('x-api-key');
