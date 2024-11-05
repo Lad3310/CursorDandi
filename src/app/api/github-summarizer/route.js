@@ -1,12 +1,17 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/supabaseClient';
 
-export async function OPTIONS() {
-  return NextResponse.json({}, { 
+export const runtime = 'edge';
+
+export async function OPTIONS(request) {
+  return new Response(null, {
+    status: 204,
     headers: {
+      'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, x-api-key',
-      'Access-Control-Allow-Origin': '*'
+      'Access-Control-Max-Age': '86400',
+      'Allow': 'POST, OPTIONS'
     }
   });
 }
