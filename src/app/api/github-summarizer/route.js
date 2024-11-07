@@ -1,18 +1,19 @@
-import { NextResponse } from 'next/server';
 import { supabase } from '@/supabaseClient';
 
 export const runtime = 'edge';
 
-export async function OPTIONS(request) {
+// Helper function for CORS headers
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, x-api-key',
+  'Access-Control-Max-Age': '86400',
+};
+
+export async function OPTIONS() {
   return new Response(null, {
     status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, x-api-key',
-      'Access-Control-Max-Age': '86400',
-      'Allow': 'POST, OPTIONS'
-    }
+    headers: corsHeaders
   });
 }
 
@@ -22,13 +23,9 @@ export async function POST(request) {
     const { githubUrl } = await request.json();
 
     if (!apiKey) {
-      return NextResponse.json({ error: 'API key is required' }, { 
+      return new Response(JSON.stringify({ error: 'API key is required' }), { 
         status: 401,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, x-api-key'
-        }
+        headers: corsHeaders
       });
     }
 
@@ -40,13 +37,9 @@ export async function POST(request) {
       .single();
 
     if (keyError || !keyData) {
-      return NextResponse.json({ error: 'Invalid API key' }, { 
+      return new Response(JSON.stringify({ error: 'Invalid API key' }), { 
         status: 403,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, x-api-key'
-        }
+        headers: corsHeaders
       });
     }
 
@@ -82,7 +75,7 @@ export async function POST(request) {
       .update({ usage: (keyData.usage || 0) + 1 })
       .eq('id', keyData.id);
 
-    return NextResponse.json({
+    return new Response(JSON.stringify({
       repository: repoData.full_name,
       url: githubUrl,
       stats: {
@@ -94,22 +87,20 @@ export async function POST(request) {
         topics: repoData.topics,
         lastUpdated: new Date(repoData.updated_at).toLocaleDateString()
       }
-    }, {
+    }), {
       headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, x-api-key'
+        'Content-Type': 'application/json',
+        ...corsHeaders
       }
     });
 
   } catch (error) {
     console.error('Error:', error);
-    return NextResponse.json({ error: error.message }, { 
+    return new Response(JSON.stringify({ error: error.message }), { 
       status: 500,
       headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, x-api-key'
+        'Content-Type': 'application/json',
+        ...corsHeaders
       }
     });
   }

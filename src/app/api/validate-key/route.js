@@ -3,31 +3,25 @@ import { supabase } from '@/supabaseClient';
 
 export const runtime = 'edge';
 
-export async function OPTIONS(request) {
-  return new Response(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, x-api-key',
-      'Access-Control-Max-Age': '86400',
-      'Allow': 'POST, OPTIONS'
-    }
-  });
-}
+// Define allowed methods
+const ALLOWED_METHODS = ['POST', 'OPTIONS'];
+
+// Helper function for CORS headers
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, x-api-key',
+  'Access-Control-Max-Age': '86400',
+};
 
 export async function POST(request) {
   try {
     const { apiKey } = await request.json();
 
     if (!apiKey) {
-      return NextResponse.json({ error: 'API key is required' }, { 
+      return new Response(JSON.stringify({ error: 'API key is required' }), { 
         status: 401,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, x-api-key'
-        }
+        headers: corsHeaders
       });
     }
 
@@ -38,37 +32,30 @@ export async function POST(request) {
       .single();
 
     if (error) {
-      console.error('Error validating API key:', error);
-      return NextResponse.json({ error: 'Error validating API key' }, { 
+      return new Response(JSON.stringify({ error: 'Error validating API key' }), { 
         status: 500,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, x-api-key'
-        }
+        headers: corsHeaders
       });
     }
 
-    return NextResponse.json({
+    return new Response(JSON.stringify({
       valid: !!data,
       message: data ? 'Valid API key' : 'Invalid API key'
-    }, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, x-api-key'
-      }
+    }), {
+      headers: corsHeaders
     });
 
   } catch (error) {
-    console.error('Error:', error);
-    return NextResponse.json({ error: error.message }, { 
+    return new Response(JSON.stringify({ error: error.message }), { 
       status: 500,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, x-api-key'
-      }
+      headers: corsHeaders
     });
   }
+}
+
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+    headers: corsHeaders
+  });
 }
