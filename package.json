@@ -11,8 +11,8 @@
   "dependencies": {
     "@heroicons/react": "^2.1.5",
     "@langchain/community": "^0.3.10",
-    "@langchain/core": "^0.3.16",
-    "@langchain/openai": "^0.3.11",
+    "@langchain/core": "^0.3.19",
+    "@langchain/openai": "^0.3.14",
     "@supabase/supabase-js": "^2.45.4",
     "langchain": "^0.3.5",
     "next": "14.2.15",
