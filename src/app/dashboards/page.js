@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { ClipboardIcon, PencilIcon, TrashIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { supabase } from '../../supabaseClient';
 import Notification from '@/components/Notification';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 // Add this new component
 const CurrentPlan = () => (
@@ -22,6 +24,23 @@ const CurrentPlan = () => (
 );
 
 export default function ApiKeyDashboard() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/');
+    }
+  }, [status, router]);
+
+  if (status === 'loading') {
+    return <div>Loading...</div>;
+  }
+
+  if (!session) {
+    return null;
+  }
+
   const [apiKeys, setApiKeys] = useState([]);
   const [visibleKeys, setVisibleKeys] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -34,7 +53,10 @@ export default function ApiKeyDashboard() {
   }, []);
 
   const fetchApiKeys = async () => {
-    const { data, error } = await supabase.from('api_keys').select('*');
+    const { data, error } = await supabase
+      .from('api_keys')
+      .select('*')
+      .eq('user_id', session.user.id);
     if (error) {
       console.error('Error fetching API keys:', error);
     } else {
@@ -64,7 +86,8 @@ export default function ApiKeyDashboard() {
       const { error } = await supabase
         .from('api_keys')
         .update({ name: newKeyName })
-        .eq('id', editingKey.id);
+        .eq('id', editingKey.id)
+        .eq('user_id', session.user.id);
       if (error) {
         console.error('Error updating API key:', error);
         showNotification('Error updating API key', 'error');
@@ -75,7 +98,11 @@ export default function ApiKeyDashboard() {
       // Create new key
       const { error } = await supabase
         .from('api_keys')
-        .insert([{ name: newKeyName, key: generateApiKey() }]);
+        .insert([{ 
+          name: newKeyName, 
+          key: generateApiKey(),
+          user_id: session.user.id 
+        }]);
       if (error) {
         console.error('Error creating API key:', error);
         showNotification('Error creating API key', 'error');
