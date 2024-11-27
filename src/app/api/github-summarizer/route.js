@@ -1,8 +1,8 @@
 import { supabase } from '@/supabaseClient';
-import { ChatOpenAI } from "langchain/chat_models/openai";
-import { PromptTemplate } from "langchain/prompts";
-import { RunnableSequence } from "langchain/schema/runnable";
-import { StructuredOutputParser } from "langchain/output_parsers";
+import { ChatOpenAI } from "@langchain/openai";
+import { PromptTemplate } from "@langchain/core/prompts";
+import { RunnableSequence } from "@langchain/core/runnables";
+import { StructuredOutputParser } from "@langchain/core/output_parsers";
 
 export const runtime = 'edge';
 
@@ -21,31 +21,19 @@ export async function OPTIONS() {
 }
 
 async function summarizeReadme(readmeContent) {
-  const model = new ChatOpenAI({ temperature: 0.7 });
+  const model = new ChatOpenAI({ 
+    temperature: 0.7,
+    modelName: "gpt-3.5-turbo"
+  });
   
   const prompt = PromptTemplate.fromTemplate(
     "Summarize this github repository from this readme file content:\n\n{readmeContent}"
   );
   
-  const schema = {
-    type: "object",
-    properties: {
-      summary: {
-        type: "string",
-        description: "A concise summary of the GitHub repository"
-      },
-      cool_facts: {
-        type: "array", 
-        items: {
-          type: "string"
-        },
-        description: "A list of interesting facts about the repository"
-      }
-    },
-    required: ["summary", "cool_facts"]
-  };
-  
-  const outputParser = StructuredOutputParser.fromZodSchema(schema);
+  const outputParser = StructuredOutputParser.fromNamesAndDescriptions({
+    summary: "A concise summary of the GitHub repository",
+    cool_facts: "A list of interesting facts about the repository"
+  });
   
   const chain = RunnableSequence.from([
     prompt,

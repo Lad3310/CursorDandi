@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ClipboardIcon, PencilIcon, TrashIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { supabase } from '../../supabaseClient';
 import Notification from '@/components/Notification';
@@ -26,21 +26,6 @@ const CurrentPlan = () => (
 export default function ApiKeyDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
-
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/');
-    }
-  }, [status, router]);
-
-  if (status === 'loading') {
-    return <div>Loading...</div>;
-  }
-
-  if (!session) {
-    return null;
-  }
-
   const [apiKeys, setApiKeys] = useState([]);
   const [visibleKeys, setVisibleKeys] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -48,11 +33,9 @@ export default function ApiKeyDashboard() {
   const [newKeyName, setNewKeyName] = useState('');
   const [notification, setNotification] = useState(null);
 
-  useEffect(() => {
-    fetchApiKeys();
-  }, []);
-
   const fetchApiKeys = async () => {
+    if (!session?.user?.id) return;
+    
     const { data, error } = await supabase
       .from('api_keys')
       .select('*')
@@ -63,6 +46,28 @@ export default function ApiKeyDashboard() {
       setApiKeys(data);
     }
   };
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/');
+    }
+  }, [status, router]);
+
+  const memoizedFetchApiKeys = useCallback(fetchApiKeys, [session?.user?.id]);
+
+  useEffect(() => {
+    if (session?.user?.id) {
+      memoizedFetchApiKeys();
+    }
+  }, [session, memoizedFetchApiKeys]);
+
+  if (status === 'loading') {
+    return <div>Loading...</div>;
+  }
+
+  if (!session) {
+    return null;
+  }
 
   const toggleKeyVisibility = (id) => {
     setVisibleKeys(prev => ({ ...prev, [id]: !prev[id] }));

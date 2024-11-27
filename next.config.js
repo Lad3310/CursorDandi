@@ -2,10 +2,10 @@
 const nextConfig = {
   images: {
     domains: [
-      'lh3.googleusercontent.com',  // Add this for Google profile pictures
-      'nextjs.org'                  // Keep this for your existing Next.js images
+      'lh3.googleusercontent.com',
+      'nextjs.org'
     ],
-  },
+  }
 }
 
 module.exports = nextConfig 
